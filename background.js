@@ -1,41 +1,69 @@
 "use strict";
 
-async function discoverAccounts() {
-  try {
-    const accounts = await messenger.accounts.list();
+const LOG = "[MoreSpamPlease]";
 
-    console.log(`[MoreSpamPlease] Found ${accounts.length} accounts.`);
+async function scanJunkFolders() {
+  const accounts = await messenger.accounts.list();
 
-    for (const account of accounts) {
-      try {
-        const [junkFolders, inboxFolders] = await Promise.all([
-          messenger.folders.query({
-            accountId: account.id,
-            specialUse: ["junk"]
-          }),
-          messenger.folders.query({
-            accountId: account.id,
-            specialUse: ["inbox"]
-          })
-        ]);
+  let totalMessages = 0;
+  let totalFolders = 0;
 
-        console.log(`[MoreSpamPlease] Account: ${account.id} (${account.type})`, {
-          junkFolders: junkFolders.map(folder => folder.name),
-          inboxFolders: inboxFolders.map(folder => folder.name)
-        });
+  console.log(`${LOG} Starting dry run.`);
 
-        if (junkFolders.length > 0 && inboxFolders.length === 1) {
-          console.log(`[MoreSpamPlease] ${account.id}: Ready`);
-        } else {
-          console.warn(`[MoreSpamPlease] ${account.id}: Missing or ambiguous folders`);
-        }
-      } catch (error) {
-        console.error(`[MoreSpamPlease] ${account.id}:`, error);
+  for (const account of accounts) {
+    try {
+      const [junkFolders, inboxFolders] = await Promise.all([
+        messenger.folders.query({
+          accountId: account.id,
+          specialUse: ["junk"]
+        }),
+        messenger.folders.query({
+          accountId: account.id,
+          specialUse: ["inbox"]
+        })
+      ]);
+
+      if (!junkFolders.length || inboxFolders.length !== 1) {
+        console.warn(`${LOG} Skipping ${account.id}: Missing or ambiguous folders.`);
+        continue;
       }
+
+      const inbox = inboxFolders[0];
+
+      for (const junk of junkFolders) {
+        try {
+          let count = 0;
+          let page = await messenger.messages.list(junk.id);
+
+          while (true) {
+            count += page.messages.length;
+
+            if (!page.id) break;
+
+            page = await messenger.messages.continueList(page.id);
+          }
+
+          totalMessages += count;
+          totalFolders++;
+
+          console.log(
+            `${LOG} ${account.id}: ${count} messages`,
+            `${junk.name} -> ${inbox.name}`
+          );
+        } catch (error) {
+          console.error(`${LOG} Failed scanning ${account.id}/${junk.name}:`, error);
+        }
+      }
+    } catch (error) {
+      console.error(`${LOG} Account ${account.id} failed:`, error);
     }
-  } catch (error) {
-    console.error("[MoreSpamPlease] Discovery failed:", error);
   }
+
+  console.log(
+    `${LOG} Dry run complete: ${totalMessages} messages across ${totalFolders} folders.`
+  );
 }
 
-discoverAccounts();
+scanJunkFolders().catch(error => {
+  console.error(`${LOG} Fatal error:`, error);
+});
