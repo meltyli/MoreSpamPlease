@@ -1,84 +1,85 @@
 "use strict";
 
 const LOG = "[MoreSpamPlease]";
-const TEST_ACCOUNT_ID = "account4";
-const TEST_SUBJECT = "MoreSpamPlease TEST";
+const TEST_SUBJECT = "PASTE EXACT SUBJECT HERE";
 
 async function testUnspam() {
   const accounts = await messenger.accounts.list();
-  const account = accounts.find(a => a.id === TEST_ACCOUNT_ID);
 
-  if (!account) {
-    throw new Error(`Account ${TEST_ACCOUNT_ID} not found`);
-  }
+  for (const account of accounts) {
+    const [junkFolders, inboxFolders] = await Promise.all([
+      messenger.folders.query({
+        accountId: account.id,
+        specialUse: ["junk"]
+      }),
+      messenger.folders.query({
+        accountId: account.id,
+        specialUse: ["inbox"]
+      })
+    ]);
 
-  const [junkFolders, inboxFolders] = await Promise.all([
-    messenger.folders.query({
-      accountId: account.id,
-      specialUse: ["junk"]
-    }),
-    messenger.folders.query({
-      accountId: account.id,
-      specialUse: ["inbox"]
-    })
-  ]);
+    if (!junkFolders.length || inboxFolders.length !== 1) {
+      continue;
+    }
 
-  if (!junkFolders.length || inboxFolders.length !== 1) {
-    throw new Error("Missing or ambiguous Junk/Inbox folders");
-  }
+    const inbox = inboxFolders[0];
 
-  const inbox = inboxFolders[0];
+    for (const junk of junkFolders) {
+      let page = await messenger.messages.list(junk.id);
 
-  for (const junk of junkFolders) {
-    let page = await messenger.messages.list(junk.id);
-
-    while (true) {
-      const message = page.messages.find(
-        m => m.subject === TEST_SUBJECT
-      );
-
-      if (message) {
-        console.log(`${LOG} Test message found in ${junk.name}`);
-
-        await messenger.messages.update(message.id, {
-          junk: false
-        });
-
-        console.log(`${LOG} Marked Not Junk`);
-
-        // Check whether Thunderbird already moved the message.
-        const updated = await messenger.messages.get(message.id);
-
-        if (!updated) {
-          console.warn(`${LOG} Message ID changed. Check Inbox.`);
-          return;
-        }
-
-        if (updated.folder?.id === inbox.id) {
-          console.log(`${LOG} Already moved to Inbox`);
-          return;
-        }
-
-        if (updated.folder?.id !== junk.id) {
-          console.warn(`${LOG} Message changed folders. Stopping.`);
-          return;
-        }
-
-        await messenger.messages.move(
-          [message.id],
-          inbox.id
+      while (true) {
+        const message = page.messages.find(
+          m => m.subject === TEST_SUBJECT
         );
 
-        console.log(`${LOG} SUCCESS: Moved to ${inbox.name}`);
-        return;
-      }
+        if (message) {
+          console.log(`${LOG} Found test message in ${account.id}`);
 
-      if (!page.id) break;
-      page = await messenger.messages.continueList(page.id);
+          await messenger.messages.update(message.id, {
+            junk: false
+          });
+
+          console.log(`${LOG} Marked Not Junk`);
+
+          // Marking Not Junk may itself move the message.
+          let updated;
+
+          try {
+            updated = await messenger.messages.get(message.id);
+          } catch (error) {
+            console.warn(
+              `${LOG} Message ID unavailable after update. Check Inbox.`,
+              error
+            );
+            return;
+          }
+
+          if (updated.folder?.id === inbox.id) {
+            console.log(`${LOG} Already in Inbox`);
+            return;
+          }
+
+          if (updated.folder?.id !== junk.id) {
+            console.warn(`${LOG} Message moved elsewhere. Stopping.`);
+            return;
+          }
+
+          await messenger.messages.move(
+            [message.id],
+            inbox.id
+          );
+
+          console.log(`${LOG} SUCCESS: ${account.id} -> Inbox`);
+          return;
+        }
+
+        if (!page.id) break;
+        page = await messenger.messages.continueList(page.id);
+      }
     }
   }
 
-  console.warn(`${LOG} Test message not found`);
+  console.warn(`${LOG} Test message not found in any Junk folder`);
 }
 
 testUnspam().catch(error => {
