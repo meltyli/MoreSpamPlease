@@ -1,0 +1,31 @@
+:root { color-scheme: light dark; }
+* { box-sizing: border-box; }
+body {
+  width: 320px;
+  margin: 0;
+  padding: 16px;
+  font: 13px system-ui, sans-serif;
+  color: CanvasText;
+  background: Canvas;
+}
+h1 { font-size: 18px; margin: 0 0 14px; }
+.status-row { display: flex; gap: 8px; align-items: center; font-size: 15px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: #778; }
+.dot.running { background: #298d4b; }
+.muted { color: GrayText; font-size: 12px; margin-top: 6px; }
+.stats { display: flex; gap: 12px; padding: 14px 0; font-size: 12px; }
+.stats span { white-space: nowrap; }
+#start {
+  width: 100%; padding: 9px 10px; font: inherit; font-weight: 600;
+  border-radius: 6px; border: 1px solid GrayText; cursor: pointer;
+}
+#start:disabled { opacity: .55; cursor: default; }
+fieldset { margin: 16px 0 0; padding: 10px; border: 1px solid GrayText; border-radius: 6px; }
+legend { font-weight: 600; }
+.toggle { display: block; }
+.frequency { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+#minutes { width: 72px; padding: 4px; }
+.last-run { margin-top: 14px; }
+#last { margin-top: 5px; font-size: 12px; }
+#error { color: #b53b31; font-size: 12px; overflow-wrap: anywhere; }
+#error:empty { display: none; }

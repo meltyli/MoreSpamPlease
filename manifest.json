@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "MoreSpamPlease",
-  "version": "0.1.0",
-  "description": "Automatically rescue junk emails and return them to their respective inboxes.",
+  "version": "0.2.0",
+  "description": "Mark Junk messages as Not Junk and move them to their own account's Inbox.",
   "browser_specific_settings": {
     "gecko": {
       "id": "more-spam-please@local.invalid",
@@ -14,9 +14,14 @@
     "messagesRead",
     "messagesUpdate",
     "messagesMove",
-    "alarms"
+    "alarms",
+    "storage"
   ],
   "background": {
     "scripts": ["background.js"]
+  },
+  "action": {
+    "default_title": "MoreSpamPlease",
+    "default_popup": "popup.html"
   }
 }
