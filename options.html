@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MoreSpamPlease</title>
+  <link rel="stylesheet" href="options.css">
+  <script src="options.js" defer></script>
+</head>
+
+<body>
+  <main>
+    <h1>MoreSpamPlease</h1>
+
+    <div class="status-row" role="status" aria-live="polite">
+      <span id="indicator" class="dot"></span>
+      <strong id="status">Connecting…</strong>
+    </div>
+    <div id="account" class="muted">—</div>
+    <div class="stats">
+      <span>Examined <b id="examined">0</b></span>
+      <span>Rescued <b id="rescued">0</b></span>
+      <span>Failed <b id="failed">0</b></span>
+    </div>
+
+    <button id="start" type="button">Start Now</button>
+
+    <fieldset>
+      <legend>Automatic processing</legend>
+      <label class="toggle"><input id="automatic" type="checkbox"> Enabled</label>
+      <div class="frequency">
+        <label for="minutes">Every</label>
+        <button id="decrease" class="step-button" type="button" aria-label="Decrease minutes">−</button>
+        <input id="minutes" type="number" min="1" max="1440" step="1" value="10">
+        <button id="increase" class="step-button" type="button" aria-label="Increase minutes">+</button>
+        <span>minutes</span>
+      </div>
+      <div id="next" class="muted">Next scan: —</div>
+    </fieldset>
+
+    <div class="last-run">
+      <strong>Last run</strong>
+      <div id="last">None</div>
+    </div>
+    <p id="error" role="alert"></p>
+  </main>
+</body>
+
+</html>
