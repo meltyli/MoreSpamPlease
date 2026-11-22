@@ -1,3 +1,13 @@
+# From one human to another
+
+Hey, thanks for checking out my project. I just made this because my email providers would just randomly send my stuff to spam and then stuff that should be spam is not being put in the trash or junk. It's just a mess and I got sick of it. My use case is to completely manually sort my emails because I don't trust any system to safely mark things are spam (h0w can I trust my own implementation??).
+
+If you have issues with it, click the issues tab at the top and then send me a message.
+
+Everything after this is just AI summarizing my words because I'm not very good at talking.
+
+---
+
 # MoreSpamPlease
 
 Minimal Thunderbird 160+ extension. Marks messages in each account's special-use Junk folder as Not Junk, then moves them to that account's Inbox.
