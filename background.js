@@ -1,69 +1,86 @@
 "use strict";
 
 const LOG = "[MoreSpamPlease]";
+const TEST_ACCOUNT_ID = "account4";
+const TEST_SUBJECT = "MoreSpamPlease TEST";
 
-async function scanJunkFolders() {
+async function testUnspam() {
   const accounts = await messenger.accounts.list();
+  const account = accounts.find(a => a.id === TEST_ACCOUNT_ID);
 
-  let totalMessages = 0;
-  let totalFolders = 0;
+  if (!account) {
+    throw new Error(`Account ${TEST_ACCOUNT_ID} not found`);
+  }
 
-  console.log(`${LOG} Starting dry run.`);
+  const [junkFolders, inboxFolders] = await Promise.all([
+    messenger.folders.query({
+      accountId: account.id,
+      specialUse: ["junk"]
+    }),
+    messenger.folders.query({
+      accountId: account.id,
+      specialUse: ["inbox"]
+    })
+  ]);
 
-  for (const account of accounts) {
-    try {
-      const [junkFolders, inboxFolders] = await Promise.all([
-        messenger.folders.query({
-          accountId: account.id,
-          specialUse: ["junk"]
-        }),
-        messenger.folders.query({
-          accountId: account.id,
-          specialUse: ["inbox"]
-        })
-      ]);
+  if (!junkFolders.length || inboxFolders.length !== 1) {
+    throw new Error("Missing or ambiguous Junk/Inbox folders");
+  }
 
-      if (!junkFolders.length || inboxFolders.length !== 1) {
-        console.warn(`${LOG} Skipping ${account.id}: Missing or ambiguous folders.`);
-        continue;
-      }
+  const inbox = inboxFolders[0];
 
-      const inbox = inboxFolders[0];
+  for (const junk of junkFolders) {
+    let page = await messenger.messages.list(junk.id);
 
-      for (const junk of junkFolders) {
-        try {
-          let count = 0;
-          let page = await messenger.messages.list(junk.id);
+    while (true) {
+      const message = page.messages.find(
+        m => m.subject === TEST_SUBJECT
+      );
 
-          while (true) {
-            count += page.messages.length;
+      if (message) {
+        console.log(`${LOG} Test message found in ${junk.name}`);
 
-            if (!page.id) break;
+        await messenger.messages.update(message.id, {
+          junk: false
+        });
 
-            page = await messenger.messages.continueList(page.id);
-          }
+        console.log(`${LOG} Marked Not Junk`);
 
-          totalMessages += count;
-          totalFolders++;
+        // Check whether Thunderbird already moved the message.
+        const updated = await messenger.messages.get(message.id);
 
-          console.log(
-            `${LOG} ${account.id}: ${count} messages`,
-            `${junk.name} -> ${inbox.name}`
-          );
-        } catch (error) {
-          console.error(`${LOG} Failed scanning ${account.id}/${junk.name}:`, error);
+        if (!updated) {
+          console.warn(`${LOG} Message ID changed. Check Inbox.`);
+          return;
         }
+
+        if (updated.folder?.id === inbox.id) {
+          console.log(`${LOG} Already moved to Inbox`);
+          return;
+        }
+
+        if (updated.folder?.id !== junk.id) {
+          console.warn(`${LOG} Message changed folders. Stopping.`);
+          return;
+        }
+
+        await messenger.messages.move(
+          [message.id],
+          inbox.id
+        );
+
+        console.log(`${LOG} SUCCESS: Moved to ${inbox.name}`);
+        return;
       }
-    } catch (error) {
-      console.error(`${LOG} Account ${account.id} failed:`, error);
+
+      if (!page.id) break;
+      page = await messenger.messages.continueList(page.id);
     }
   }
 
-  console.log(
-    `${LOG} Dry run complete: ${totalMessages} messages across ${totalFolders} folders.`
-  );
+  console.warn(`${LOG} Test message not found`);
 }
 
-scanJunkFolders().catch(error => {
-  console.error(`${LOG} Fatal error:`, error);
+testUnspam().catch(error => {
+  console.error(`${LOG} Test failed:`, error);
 });
