@@ -3,10 +3,6 @@
   "name": "MoreSpamPlease",
   "version": "0.3.0",
   "description": "Mark Junk messages as Not Junk and move them to their own account's Inbox.",
-  "icons": {
-    "48": "icons/icon-48.png",
-    "96": "icons/icon-96.png"
-  },
   "browser_specific_settings": {
     "gecko": {
       "id": "more-spam-please@local.invalid",
