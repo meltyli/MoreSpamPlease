@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "MoreSpamPlease",
+  "version": "0.1.0",
+  "description": "Automatically rescue junk emails and return them to their respective inboxes.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "more-spam-please@local.invalid",
+      "strict_min_version": "160.0"
+    }
+  },
+  "permissions": [
+    "accountsRead",
+    "messagesRead",
+    "messagesUpdate",
+    "messagesMove",
+    "alarms"
+  ],
+  "background": {
+    "scripts": ["background.js"]
+  }
+}
