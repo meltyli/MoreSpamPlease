@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "MoreSpamPlease",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Mark Junk messages as Not Junk and move them to their own account's Inbox.",
   "browser_specific_settings": {
     "gecko": {
@@ -18,10 +18,12 @@
     "storage"
   ],
   "background": {
-    "scripts": ["background.js"]
+    "scripts": [
+      "background.js"
+    ]
   },
-  "action": {
-    "default_title": "MoreSpamPlease",
-    "default_popup": "popup.html"
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
   }
 }

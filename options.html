@@ -1,12 +1,14 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MoreSpamPlease</title>
-  <link rel="stylesheet" href="popup.css">
-  <script src="popup.js" defer></script>
+  <link rel="stylesheet" href="options.css">
+  <script src="options.js" defer></script>
 </head>
+
 <body>
   <main>
     <h1>MoreSpamPlease</h1>
@@ -27,10 +29,13 @@
     <fieldset>
       <legend>Automatic processing</legend>
       <label class="toggle"><input id="automatic" type="checkbox"> Enabled</label>
-      <label class="frequency">Every
+      <div class="frequency">
+        <label for="minutes">Every</label>
+        <button id="decrease" class="step-button" type="button" aria-label="Decrease minutes">−</button>
         <input id="minutes" type="number" min="1" max="1440" step="1" value="10">
-        minutes
-      </label>
+        <button id="increase" class="step-button" type="button" aria-label="Increase minutes">+</button>
+        <span>minutes</span>
+      </div>
       <div id="next" class="muted">Next scan: —</div>
     </fieldset>
 
@@ -41,4 +46,5 @@
     <p id="error" role="alert"></p>
   </main>
 </body>
+
 </html>

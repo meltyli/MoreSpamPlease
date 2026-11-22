@@ -14,11 +14,17 @@ function formatTime(timestamp) {
 
 function render(state) {
   const running = state.status.phase === "processing";
-  el("status").textContent = running ? "Processing" : "Idle";
+  el("status").textContent = running
+    ? ({ collecting: "Collecting", settling: "Settling", moving: "Processing" }[state.status.stage] || "Processing")
+    : "Idle";
   el("indicator").classList.toggle("running", running);
-  el("account").textContent = running
-    ? `Account: ${state.status.account || "discovering…"}`
-    : "Ready for next scan";
+  el("account").textContent = !running
+    ? "Ready for next scan"
+    : state.status.stage === "collecting"
+      ? `Scanning: ${state.status.account || "accounts…"}`
+      : state.status.stage === "settling"
+        ? "Waiting 15 seconds before moving queued mail"
+        : `Account: ${state.status.account || "starting…"}`;
   const counts = running ? state.status : state.lastRun;
   el("examined").textContent = counts?.examined ?? 0;
   el("rescued").textContent = counts?.rescued ?? 0;
@@ -94,5 +100,16 @@ async function saveSettings() {
 
 automatic.addEventListener("change", saveSettings);
 minutes.addEventListener("change", saveSettings);
+
+function adjustMinutes(delta) {
+  const current = Number(minutes.value) || 10;
+  const next = Math.max(1, Math.min(1440, current + delta));
+
+  minutes.value = next;
+  saveSettings();
+}
+
+el("decrease").addEventListener("click", () => adjustMinutes(-1));
+el("increase").addEventListener("click", () => adjustMinutes(1));
 refresh();
 setInterval(refresh, 1000);
