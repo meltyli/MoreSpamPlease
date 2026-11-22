@@ -1,3 +1,9 @@
+<p align="center">
+   <a href ="https://github.com/meltyli/MoreSpamPlease">
+      <img src="https://raw.githubusercontent.com/meltyli/MoreSpamPlease/refs/heads/main/icon.png" alt="logo" width="128">
+   </a>
+</p>
+
 # From one human to another
 
 Hey, thanks for checking out my project. I just made this because my email providers would just randomly send my stuff to spam and then stuff that should be spam is not being put in the trash or junk. It's just a mess and I got sick of it. My use case is to completely manually sort my emails because I don't trust any system to safely mark things are spam (h0w can I trust my own implementation??).
